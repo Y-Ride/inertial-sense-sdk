@@ -55,7 +55,7 @@ class Log:
         self.c_log.init(self, directory, serials)
         self.c_log.load()
         self.serials = self.c_log.getSerialNumbers()
-        self.sanitize()
+        # self.sanitize()
         self.data = np.array(self.data, dtype=object)
         self.directory = directory
         self.mount_bias_filepath = directory + '/angular_mount_bias.yml'
@@ -236,7 +236,7 @@ class Log:
 
     def getRMSArray(self):
         if self.numDev > 1 or self.refINS:
-            print("\nComputing RMS Accuracies: (%d devices)" % (self.numIns))
+            print("Computing RMS Accuracies: (%d devices)" % (self.numIns))
 
             # Build a 3D array of the data.  idx 0 = Device,    idx 1 = t,     idx 2 = [t, lla, uvw, log(q)]
             data = [np.hstack((self.data[i, DID_INS_2]['timeOfWeek'][:, None],
@@ -362,7 +362,7 @@ class Log:
     def printRMSReport(self):
         uINS_device_idx = [n for n in range(self.numDev) if n in self.devIdx and not (n in self.refIdx)]
         self.tmpPassRMS = 1
-        filename = os.path.join(self.directory, 'RMS_report_new_logger.txt')
+        filename = os.path.join(self.directory, 'RMS_test_report.txt')
         # Make sure all devices have the same hardware
         hardware = self.hardware[uINS_device_idx[0]]
         for dev in uINS_device_idx:
@@ -529,7 +529,7 @@ class Log:
             fver    = devInfo['firmwareVer']
             buld    = devInfo['buildNumber']
             repo    = devInfo['repoRevision']
-            year    = devInfo['buildYear'] + 2000
+            year    = 2000 + int(devInfo['buildYear'])
             month   = devInfo['buildMonth']
             day     = devInfo['buildDay']
             hour    = devInfo['buildHour']
@@ -585,7 +585,7 @@ class Log:
 
     # This does not work when running in debug mode
     def openRMSReport(self):
-        filename = os.path.join(self.directory, 'RMS_report_new_logger.txt')
+        filename = os.path.join(self.directory, 'RMS_test_report.txt')
         if 'win' in sys.platform:
             subprocess.Popen(["notepad.exe", filename])
         if 'linux' in sys.platform:

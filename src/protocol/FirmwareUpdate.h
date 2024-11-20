@@ -264,7 +264,8 @@ namespace fwUpdate {
         struct {
             target_t resTarget;     //! the target identifier of the responding device (for which this data represents)
             uint32_t serialNumber;  //! the serial number of the host, or controlling device (return the IMX SN if querying the IMX's Accelerometer, for example)
-            uint16_t hardwareId;    //! hardware identifier
+            uint8_t reserved;       //! unused
+            uint8_t hardwareType;   //! hardware identifier
             uint8_t hardwareVer[4]; //! Hardware version
             uint8_t firmwareVer[4]; //! Firmware (software) version
 
@@ -384,6 +385,7 @@ namespace fwUpdate {
         uint16_t session_chunk_size = 0;                        //! the negotiated maximum size for each chunk.
         uint16_t session_total_chunks = 0;                      //! the total number of chunks for the given image size
         uint32_t session_image_size = 0;                        //! the total size of the image to be sent
+        uint16_t session_progress_rate = 250;                   //! the number of milliseconds between progress updates
         uint8_t session_image_slot = 0;                         //! the "slot" to which this image will be written in the flash
         uint8_t session_image_flags = 0;                        //! additional flags to be communicated to the device for special processing
         md5hash_t session_md5 = { };                            //! the md5 of the firmware image

@@ -102,8 +102,9 @@ static void register_comport( vector<string>& comList, vector<string>& comList82
         if (driver == "serial8250") 
 		{	// Put serial8250-devices in a seperate list
             comList8250.push_back(devfile);
-        } else
-		{
+        }
+        else if (driver != "port")
+        {
             comList.push_back(devfile);
 		}
     }
@@ -136,6 +137,12 @@ static void probe_serial8250_comports(vector<string>& comList, vector<string> co
 
 #endif // #if PLATFORM_IS_LINUX
 
+/**
+ * Populates a vector of string identifiers for all available Serial/TTY/UART devices on the host system.
+ * This does not open, access, or configure the devices, nor does it make any guarantee about the availability
+ * of the ports (only that the OS has registered/enumerated it).
+ * @param ports a reference to a vector of strings, which will be populated with available serial ports
+ */
 void cISSerialPort::GetComPorts(vector<string>& ports)
 {
 	ports.clear();
