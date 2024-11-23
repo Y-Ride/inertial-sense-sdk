@@ -1,17 +1,3 @@
-
-# This file is used to ignore files which should not be pushed to the repository
-# Ignore colcon build files
-build/
-install/
-log/
-
-
-
-
-########################
-# From other gitignore #
-########################
-
 cmake-build-*/
 .cmake/
 build/

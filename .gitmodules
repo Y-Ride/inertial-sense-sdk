@@ -1,3 +1,3 @@
-[submodule "src/libusb"]
-	path = src/libusb
+[submodule "src/inertial-sense-sdk/src/libusb"]
+	path = src/inertial-sense-sdk/src/libusb
 	url = https://github.com/inertialsense/libusb
