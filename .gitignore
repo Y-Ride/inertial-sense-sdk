@@ -5,22 +5,14 @@ build/
 install/
 log/
 
-
-
-
-########################
-# From other gitignore #
-########################
-
+# Ignore CMake build files
 cmake-build-*/
 .cmake/
-build/
-obj/
-x64
-Release/
-Debug/
-IS_logs/
 CMakeFiles/
+Makefile
+CMakeCache.txt
+cmake_install.cmake
+
 
 *.autosave
 *.elf
@@ -38,18 +30,3 @@ CMakeFiles/
 .vscode
 .venv
 .idea
-cmake-build-debug
-Makefile
-CMakeCache.txt
-cmake_install.cmake
-libInertialSenseSDK.a
-scripts/.venv/
-python/venv/
-python/logInspector/.eggs/
-ros/install/
-ros/log/
-ros/ros2/install/
-ros/ros2/log/
-
-ExampleProjects/Arduino/ReadIS/src/
-ExampleProjects/LogReader_RegCmp/Log/
