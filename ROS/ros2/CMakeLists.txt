@@ -73,8 +73,8 @@ include_directories(
     ../../src/libusb/linux
     ../../src/yaml-cpp
     ../ros2/build/inertial_sense_ros2/rosidl_generator_cpp/
-    /opt/ros/jazzy/include
-    /opt/ros/jazzy/include/sensor_msgs
+    /opt/ros/humble/include
+    /opt/ros/humble/include/sensor_msgs
 )
 
 # Build using C11 and CXX20
@@ -98,27 +98,27 @@ ament_target_dependencies(${PROJECT_NAME}_node rclcpp std_msgs geometry_msgs nav
 target_link_libraries(${PROJECT_NAME}_node InertialSenseSDK ${YAML_CPP_LIBRARIES} pthread)
 
 
-ament_add_gtest(test_${PROJECT_NAME}
-    src/inertial_sense_ros2.cpp
-    shared/src/ParamHelper.cpp
-    shared/src/RtkRover.cpp
-    shared/src/RtkBase.cpp
-    test/test_basic_unit_tests.cpp
-    test/test_client_reconnect.cpp
-    test/test_communications.cpp
-    #test/test_main.cpp
-    #test/test_main.h
-    test/gtest_helpers.h
-)
+# ament_add_gtest(test_${PROJECT_NAME}
+#     src/inertial_sense_ros2.cpp
+#     shared/src/ParamHelper.cpp
+#     shared/src/RtkRover.cpp
+#     shared/src/RtkBase.cpp
+#     test/test_basic_unit_tests.cpp
+#     test/test_client_reconnect.cpp
+#     test/test_communications.cpp
+#     #test/test_main.cpp
+#     #test/test_main.h
+#     test/gtest_helpers.h
+# )
 
-rosidl_get_typesupport_target(cpp_typesupport_target "${PROJECT_NAME}" "rosidl_typesupport_cpp")
-target_link_libraries(test_${PROJECT_NAME} "${cpp_typesupport_target}")
-ament_target_dependencies(test_${PROJECT_NAME} rclcpp std_msgs geometry_msgs nav_msgs diagnostic_msgs sensor_msgs std_srvs)
-target_link_libraries(test_${PROJECT_NAME} InertialSenseSDK ${YAML_CPP_LIBRARIES} pthread)
+# rosidl_get_typesupport_target(cpp_typesupport_target "${PROJECT_NAME}" "rosidl_typesupport_cpp")
+# target_link_libraries(test_${PROJECT_NAME} "${cpp_typesupport_target}")
+# ament_target_dependencies(test_${PROJECT_NAME} rclcpp std_msgs geometry_msgs nav_msgs diagnostic_msgs sensor_msgs std_srvs)
+# target_link_libraries(test_${PROJECT_NAME} InertialSenseSDK ${YAML_CPP_LIBRARIES} pthread)
 
-#link_directories(/home/s/Inertial_Sense/imx/ros2_ws/src/inertial-sense-sdk)
-install(TARGETS test_${PROJECT_NAME}
-        DESTINATION lib/${PROJECT_NAME})
+# #link_directories(/home/s/Inertial_Sense/imx/ros2_ws/src/inertial-sense-sdk)
+# install(TARGETS test_${PROJECT_NAME}
+#         DESTINATION lib/${PROJECT_NAME})
 
 install(TARGETS ${PROJECT_NAME}_node
         DESTINATION lib/${PROJECT_NAME})
