@@ -1,7 +1,7 @@
 /*
 MIT LICENSE
 
-Copyright (c) 2014-2024 Inertial Sense, Inc. - http://inertialsense.com
+Copyright (c) 2014-2025 Inertial Sense, Inc. - http://inertialsense.com
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files(the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions :
 
@@ -760,7 +760,7 @@ string cInertialSenseDisplay::DataToString(const p_data_t* data)
 		else
 		{
 			std::ostringstream oss;
-		    oss << "(" << std::setw(3) << std::to_string(data->hdr.id) << ") " << std::string(cISDataMappings::DataName(data->hdr.id));
+		    oss << "(" << std::setw(3) << std::to_string(data->hdr.id) << ") " << std::string(cISDataMappings::DataName(data->hdr.id)) << std::endl;
 			str = oss.str();
 		}
 		break;
@@ -804,7 +804,7 @@ char* cInertialSenseDisplay::StatusToString(char* ptr, char* ptrEnd, const uint3
 	ptr += SNPRINTF(ptr, ptrEnd - ptr, "\t\tErrors    Rx parse %d, temperature %d, self-test %d\n",
 		HDW_STATUS_COM_PARSE_ERROR_COUNT(hdwStatus),
 		(hdwStatus & HDW_STATUS_ERR_TEMPERATURE) != 0,
-		(hdwStatus & HDW_STATUS_BIT_MASK) == HDW_STATUS_BIT_FAULT);
+		(hdwStatus & HDW_STATUS_BIT_MASK) == HDW_STATUS_BIT_FAILED);
 
     ptr += SNPRINTF(ptr, ptrEnd - ptr, "\t\thdwStatus (0x%08X)", hdwStatus);
     std::string statusStr;
@@ -1608,7 +1608,7 @@ string cInertialSenseDisplay::DataToStringDevInfo(const dev_info_t &info, bool f
         case 'c': ptr += SNPRINTF(ptr, ptrEnd - ptr, "-rc");        break;
         case 'd': ptr += SNPRINTF(ptr, ptrEnd - ptr, "-devel");     break;
         case 's': ptr += SNPRINTF(ptr, ptrEnd - ptr, "-snap");      break;
-        case '*': ptr += SNPRINTF(ptr, ptrEnd - ptr, "-snap");      break;
+        case '^': ptr += SNPRINTF(ptr, ptrEnd - ptr, "-snap");      break;
         default : break;
     }
 
@@ -1617,8 +1617,8 @@ string cInertialSenseDisplay::DataToStringDevInfo(const dev_info_t &info, bool f
     }
 
     char dirty = 0;
-    if (info.buildType == '*') {
-        dirty = '*';
+    if (info.buildType == '^') {
+        dirty = '^';
     }
 
     ptr += SNPRINTF(ptr, ptrEnd - ptr, " %08x%c (%05X.%d)",
@@ -1825,7 +1825,8 @@ string cInertialSenseDisplay::DataToStringPortMonitor(const port_monitor_t &port
     char* ptr = buf;
     char* ptrEnd = buf + BUF_SIZE;
 
-    ptr += SNPRINTF(ptr, ptrEnd - ptr, "(%3d) %s:\n", hdr.id, cISDataMappings::DataName(hdr.id));
+	ptr += SNPRINTF_ID_NAME(hdr.id);
+    ptr += SNPRINTF(ptr, ptrEnd - ptr, "\n");
 
 #if DISPLAY_DELTA_TIME==1
     static double lastTime[2] = { 0 };

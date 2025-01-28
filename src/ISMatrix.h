@@ -1,7 +1,7 @@
 /*
 MIT LICENSE
 
-Copyright (c) 2014-2024 Inertial Sense, Inc. - http://inertialsense.com
+Copyright (c) 2014-2025 Inertial Sense, Inc. - http://inertialsense.com
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files(the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions :
 
@@ -41,26 +41,29 @@ extern "C" {
 #define EPSF32 (1.0e-16f)  // Smallest number for safe division
 #define EPSF64 (1.0e-16l)  // Smallest number for safe division
 
-#define RECIPNORM_VEC2(v)	(1.0f/_MAX(MAG_VEC2(v), EPSF32))
-#define RECIPNORM_VEC3(v)	(1.0f/_MAX(MAG_VEC3(v), EPSF32))
-#define RECIPNORM_VEC4(v)	(1.0f/_MAX(MAG_VEC4(v), EPSF32))
+#define RECIPNORM_VEC2(v)	(1.0f/_MAX(MAG_VEC2(v),  EPSF32))
+#define RECIPNORM_VEC3(v)	(1.0f/_MAX(MAG_VEC3(v),  EPSF32))
+#define RECIPNORM_VEC4(v)	(1.0f/_MAX(MAG_VEC4(v),  EPSF32))
 #define RECIPNORM_VEC3D(v)	(1.0l/_MAX(MAG_VEC3D(v), EPSF64))
 #define RECIPNORM_VEC4D(v)	(1.0l/_MAX(MAG_VEC4D(v), EPSF64))
 
 #define UNWRAP_VEC3(v)	{UNWRAP_RAD_F32(v[0]); UNWRAP_RAD_F32(v[1]); UNWRAP_RAD_F32(v[2]) }
 
-#define VEC3_ONELESSTHAN_X(v,x)		( ((v[0])<(x))  || ((v[1])<(x))  || ((v[2])<(x)) )
-#define VEC3_ONEGRTRTHAN_X(v,x)		( ((v[0])>(x))  || ((v[1])>(x))  || ((v[2])>(x)) )
-#define VEC3_ALLLESSTHAN_X(v,x)		( ((v[0])<(x))  && ((v[1])<(x))  && ((v[2])<(x)) )
-#define VEC3_ALLGRTRTHAN_X(v,x)		( ((v[0])>(x))  && ((v[1])>(x))  && ((v[2])>(x)) )
-#define VEC3_ISZERO(v)				( ((v[0])==(0.0f))  && ((v[1])==(0.0f))  && ((v[2])==(0.0f)) )
-#define VEC3_ISANYZERO(v)			( ((v[0])==(0.0f))  || ((v[1])==(0.0f))  || ((v[2])==(0.0f)) )
-#define VEC3_ISANYNONZERO(v)		( ((v[0])!=(0.0f))  || ((v[1])!=(0.0f))  || ((v[2])!=(0.0f)) )
+#define VEC3_ANY_LESS_THAN_X(v,x)	( ((v[0])<(x)) || ((v[1])<(x)) || ((v[2])<(x)) )
+#define VEC3_ANY_GRTR_THAN_X(v,x)	( ((v[0])>(x)) || ((v[1])>(x)) || ((v[2])>(x)) )
+#define VEC3_ALL_LESS_THAN_X(v,x)	( ((v[0])<(x)) && ((v[1])<(x)) && ((v[2])<(x)) )
+#define VEC3_ALL_GRTR_THAN_X(v,x)	( ((v[0])>(x)) && ((v[1])>(x)) && ((v[2])>(x)) )
+#define VEC3_ALL_ZERO(v)			( ((v[0])==(0.0f)) && ((v[1])==(0.0f)) && ((v[2])==(0.0f)) )
+#define VEC3_ANY_ZERO(v)			( ((v[0])==(0.0f)) || ((v[1])==(0.0f)) || ((v[2])==(0.0f)) )
+#define VEC3_ANY_NOT_ZERO(v)		( ((v[0])!=(0.0f)) || ((v[1])!=(0.0f)) || ((v[2])!=(0.0f)) )
+
+#define INT3_ANY_NOT_ZERO(v)		( ((v[0])!=(0)) || ((v[1])!=(0)) || ((v[2])!=(0)) )
 
 #define SET_VEC3_X(v,x)				{ (v[0])=(x); (v[1])=(x); (v[2])=(x); }
 #define SET_VEC4_X(v,x)				{ (v[0])=(x); (v[1])=(x); (v[2])=(x); (v[3])=(x); }
 
 #define IS_NAN(v)					((v) != (v))
+#define IS_INF(v)                   (isinf(v))
 
 // Zero order low-pass filter 
 typedef struct
@@ -411,15 +414,17 @@ static __inline f_t max_Vec3_X(const ixVector3 v )
  */
 static __inline f_t abs_Vec3_X(const ixVector3 v )
 {
-	f_t val = fabsf(v[0]);
-	
-    if( val < fabsf(v[1]) )
-		val = v[1];
+    f_t result = fabsf(v[0]);
+    f_t val1   = fabsf(v[1]);
+    f_t val2   = fabsf(v[2]);
 
-    if( val < fabsf(v[2]) )
-		val = v[2];
+    if( result < val1 )
+        result = val1;
+
+    if( result < val2 )
+        result = val2;
 		
-	return val;
+    return result;
 }
 
 /* Max of vector elements

@@ -1,7 +1,7 @@
 /*
 MIT LICENSE
 
-Copyright (c) 2014-2024 Inertial Sense, Inc. - http://inertialsense.com
+Copyright (c) 2014-2025 Inertial Sense, Inc. - http://inertialsense.com
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files(the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions :
 
@@ -90,7 +90,7 @@ static void PopulateMapDeviceInfo(data_set_t data_set[DID_COUNT], uint32_t did)
     mapper.AddArray("protocolVer", &dev_info_t::protocolVer, DATA_TYPE_UINT8, 4, "", "Communications protocol version", DATA_FLAGS_READ_ONLY);
     mapper.AddMember("repoRevision", &dev_info_t::repoRevision, DATA_TYPE_UINT32, "", "Repo revision", DATA_FLAGS_READ_ONLY | DATA_FLAGS_DISPLAY_HEX);
     mapper.AddMember("manufacturer", &dev_info_t::manufacturer, DATA_TYPE_STRING, "", "manufacturer", DATA_FLAGS_READ_ONLY);
-    mapper.AddMember("buildType", &dev_info_t::buildType, DATA_TYPE_UINT8, "", "'a'(97)=ALPHA, 'b'(98)=BETA, 'c'(99)=CANDIDATE, 'r'(114)=PRODUCTION, 'd'(100)=develop, 's'(115)=snapshot, '*'(42)=dirty", DATA_FLAGS_READ_ONLY);
+    mapper.AddMember("buildType", &dev_info_t::buildType, DATA_TYPE_UINT8, "", "'a'(97)=ALPHA, 'b'(98)=BETA, 'c'(99)=CANDIDATE, 'r'(114)=PRODUCTION, 'd'(100)=develop, 's'(115)=snapshot, '^'(94)=dirty", DATA_FLAGS_READ_ONLY);
     mapper.AddMember("buildYear", &dev_info_t::buildYear, DATA_TYPE_UINT8, "", "Build year-2000", DATA_FLAGS_READ_ONLY);
     mapper.AddMember("buildMonth", &dev_info_t::buildMonth, DATA_TYPE_UINT8, "", "Build month", DATA_FLAGS_READ_ONLY);
     mapper.AddMember("buildDay", &dev_info_t::buildDay, DATA_TYPE_UINT8, "", "Build day", DATA_FLAGS_READ_ONLY);
@@ -141,7 +141,7 @@ static void PopulateMapBit(data_set_t data_set[DID_COUNT], uint32_t did)
     mapper.AddMember("pqrSigma", &bit_t::pqrSigma, DATA_TYPE_F32, SYM_DEG_PER_S, "Angular rate standard deviation", DATA_FLAGS_READ_ONLY | DATA_FLAGS_FIXED_DECIMAL_4, C_RAD2DEG);
     mapper.AddMember("accSigma", &bit_t::accSigma, DATA_TYPE_F32, SYM_M_PER_S, "Acceleration standard deviation", DATA_FLAGS_READ_ONLY | DATA_FLAGS_FIXED_DECIMAL_4);
     mapper.AddMember("testMode", &bit_t::testMode, DATA_TYPE_UINT8, "", "Test Mode: " TOSTRING(BIT_TEST_MODE_SIM_GPS_NOISE) "=GPS noise, " TOSTRING(BIT_TEST_MODE_SERIAL_DRIVER_RX_OVERFLOW) "=Rx overflow, " TOSTRING(BIT_TEST_MODE_SERIAL_DRIVER_TX_OVERFLOW) "=Tx overflow");
-    mapper.AddMember("testVar", &bit_t::testVar, DATA_TYPE_UINT8, "", "Test Mode variable (port number)", DATA_FLAGS_READ_ONLY);
+    mapper.AddMember("testVar", &bit_t::testVar, DATA_TYPE_UINT8, "", "Test Mode variable (port number)");
     mapper.AddMember("detectedHardwareId", &bit_t::detectedHardwareId, DATA_TYPE_UINT16, "", "Hardware ID detected (see eIsHardwareType) used to validate correct firmware use.", DATA_FLAGS_READ_ONLY | DATA_FLAGS_DISPLAY_HEX);
 }
 
@@ -232,7 +232,7 @@ static void PopulateMapSysParams(data_set_t data_set[DID_COUNT], uint32_t did)
     mapper.AddMember("imuTemp",             &sys_params_t::imuTemp, DATA_TYPE_F32, SYM_DEG_C, "IMU temperature", DATA_FLAGS_READ_ONLY | DATA_FLAGS_FIXED_DECIMAL_1);
     mapper.AddMember("baroTemp",            &sys_params_t::baroTemp, DATA_TYPE_F32, SYM_DEG_C, "IMU temperature", DATA_FLAGS_READ_ONLY | DATA_FLAGS_FIXED_DECIMAL_1);
     mapper.AddMember("mcuTemp",             &sys_params_t::mcuTemp, DATA_TYPE_F32, SYM_DEG_C, "Barometer temperature", DATA_FLAGS_READ_ONLY | DATA_FLAGS_FIXED_DECIMAL_1);
-    mapper.AddMember("sysStatus",           &sys_params_t::sysStatus, DATA_TYPE_UINT32, SYM_DEG_C, "MCU temperature", DATA_FLAGS_READ_ONLY | DATA_FLAGS_FIXED_DECIMAL_1);
+    mapper.AddMember("sysStatus",           &sys_params_t::sysStatus, DATA_TYPE_UINT32, "", "System Status Flags (See eSysStatusFlags)", DATA_FLAGS_DISPLAY_HEX);
     mapper.AddMember("imuSamplePeriodMs",   &sys_params_t::imuSamplePeriodMs, DATA_TYPE_UINT32, "ms", "IMU sample period. Zero disables sensor sampling");
     mapper.AddMember("navOutputPeriodMs",   &sys_params_t::navOutputPeriodMs, DATA_TYPE_UINT32, "ms", "Navigation/AHRS filter ouput period");
     mapper.AddMember("navUpdatePeriodMs",   &sys_params_t::navUpdatePeriodMs, DATA_TYPE_UINT32, "ms", "Navigation/AHRS filter update period", DATA_FLAGS_READ_ONLY);
@@ -528,8 +528,8 @@ static void PopulateMapGroundVehicle(data_set_t data_set[DID_COUNT], uint32_t di
 static void PopulateMapSystemCommand(data_set_t data_set[DID_COUNT], uint32_t did)
 {
     DataMapper<system_command_t> mapper(data_set, did);
-    mapper.AddMember("command", &system_command_t::command, DATA_TYPE_UINT32, "", "99=software reset, 5=zero sensors");
-    mapper.AddMember("invCommand", &system_command_t::invCommand, DATA_TYPE_UINT32, "", "Bitwise inverse of command (-command - 1) required to process command.");
+    mapper.AddMember("command", &system_command_t::command, DATA_TYPE_INT32, "", "99=software reset, 5=zero sensors");
+    mapper.AddMember("invCommand", &system_command_t::invCommand, DATA_TYPE_INT32, "", "Bitwise inverse of command ((-command) - 1) required to process command.");
 }
 
 static void PopulateMapNvmFlashCfg(data_set_t data_set[DID_COUNT], uint32_t did)
@@ -681,10 +681,10 @@ static void PopulateMapGpxStatus(data_set_t data_set[DID_COUNT], uint32_t did)
     mapper.AddMember("rtkMode", &gpx_status_t::rtkMode, DATA_TYPE_UINT32, "", str, DATA_FLAGS_READ_ONLY | DATA_FLAGS_DISPLAY_HEX);
     for (int i=0; i<GNSS_RECEIVER_COUNT; i++)
     {
-        mapper.AddMember2("gnssStatus" + std::to_string(i) + ".reserved",      i*sizeof(gpx_gnss_status_t) + offsetof(gpx_status_t, gnssStatus[0].reserved),      DATA_TYPE_UINT8, "", "");
-        mapper.AddMember2("gnssStatus" + std::to_string(i) + ".fwUpdateState", i*sizeof(gpx_gnss_status_t) + offsetof(gpx_status_t, gnssStatus[0].fwUpdateState), DATA_TYPE_UINT8, "", "GNSS FW update status (see FirmwareUpdateState)");
-        mapper.AddMember2("gnssStatus" + std::to_string(i) + ".initState",     i*sizeof(gpx_gnss_status_t) + offsetof(gpx_status_t, gnssStatus[0].initState),     DATA_TYPE_UINT8, "", "GNSS init status (see InitSteps)");
-        mapper.AddMember2("gnssStatus" + std::to_string(i) + ".runState",      i*sizeof(gpx_gnss_status_t) + offsetof(gpx_status_t, gnssStatus[0].runState),      DATA_TYPE_UINT8, "", "GNSS run status (see eGPXGnssRunState)");
+        mapper.AddMember2("gnssStatus" + std::to_string(i) + ".lastRstCause", i*sizeof(gpx_gnss_status_t) + offsetof(gpx_status_t, gnssStatus[0].lastRstCause), DATA_TYPE_UINT8, "", "GNSS last reset cause (see eGnssResetCause)");
+        mapper.AddMember2("gnssStatus" + std::to_string(i) + ".fwUpdateState",  i*sizeof(gpx_gnss_status_t) + offsetof(gpx_status_t, gnssStatus[0].fwUpdateState),  DATA_TYPE_UINT8, "", "GNSS FW update status (see FirmwareUpdateState)");
+        mapper.AddMember2("gnssStatus" + std::to_string(i) + ".initState",      i*sizeof(gpx_gnss_status_t) + offsetof(gpx_status_t, gnssStatus[0].initState),      DATA_TYPE_UINT8, "", "GNSS init status (see InitSteps)");
+        mapper.AddMember2("gnssStatus" + std::to_string(i) + ".runState",       i*sizeof(gpx_gnss_status_t) + offsetof(gpx_status_t, gnssStatus[0].runState),       DATA_TYPE_UINT8, "", "GNSS run status (see eGPXGnssRunState)");
     }
     mapper.AddMember("gpxSourcePort", &gpx_status_t::gpxSourcePort, DATA_TYPE_UINT8, "", "Port", DATA_FLAGS_READ_ONLY);
     mapper.AddMember("upTime", &gpx_status_t::upTime, DATA_TYPE_F64, "s", "Local time since startup.", DATA_FLAGS_READ_ONLY | DATA_FLAGS_FIXED_DECIMAL_1);
@@ -769,7 +769,7 @@ static void PopulateMapEvbFlashCfg(data_set_t data_set[DID_COUNT], uint32_t did)
 static void PopulateMapDebugArray(data_set_t data_set[DID_COUNT], uint32_t did)
 {
     DataMapper<debug_array_t> mapper(data_set, did);
-    mapper.AddArray("i", &debug_array_t::i, DATA_TYPE_UINT32, DEBUG_I_ARRAY_SIZE);
+    mapper.AddArray("i", &debug_array_t::i, DATA_TYPE_INT32, DEBUG_I_ARRAY_SIZE);
     mapper.AddArray("f", &debug_array_t::f, DATA_TYPE_F32, DEBUG_F_ARRAY_SIZE, "", "", DATA_FLAGS_FIXED_DECIMAL_4);
     mapper.AddArray("lf", &debug_array_t::lf, DATA_TYPE_F64, DEBUG_LF_ARRAY_SIZE, "", "", DATA_FLAGS_FIXED_DECIMAL_9);
 }
@@ -957,6 +957,7 @@ static void PopulateMapGpsRtkMisc(data_set_t data_set[DID_COUNT], uint32_t did)
 {
     DataMapper<gps_rtk_misc_t> mapper(data_set, did);
     mapper.AddMember("timeOfWeekMs", &gps_rtk_misc_t::timeOfWeekMs, DATA_TYPE_UINT32, "ms", "Time of week since Sunday morning", DATA_FLAGS_READ_ONLY | DATA_FLAGS_FIXED_DECIMAL_4);
+    mapper.AddMember("timeToFirstFixMs", &gps_rtk_misc_t::timeToFirstFixMs, DATA_TYPE_UINT32, "ms", "Time to first RTK fix", DATA_FLAGS_READ_ONLY);
     mapper.AddArray("accuracyPos", &gps_rtk_misc_t::accuracyPos, DATA_TYPE_F32, 3, "m", "Accuracy in meters north, east, up (standard deviation)", DATA_FLAGS_READ_ONLY | DATA_FLAGS_FIXED_DECIMAL_4);
     mapper.AddArray("accuracyCov", &gps_rtk_misc_t::accuracyCov, DATA_TYPE_F32, 3, "m", "Absolute value of means square root of estimated covariance NE, EU, UN", DATA_FLAGS_READ_ONLY | DATA_FLAGS_FIXED_DECIMAL_4);
     mapper.AddMember("arThreshold", &gps_rtk_misc_t::arThreshold, DATA_TYPE_F32, "", "Ambiguity resolution threshold for validation", DATA_FLAGS_READ_ONLY | DATA_FLAGS_FIXED_DECIMAL_3);
@@ -997,7 +998,6 @@ static void PopulateMapGpsRtkMisc(data_set_t data_set[DID_COUNT], uint32_t did)
     mapper.AddMember("ionUtcAlmCount", &gps_rtk_misc_t::ionUtcAlmCount, DATA_TYPE_UINT32, "int", "Ion model / utc / alm element counter", DATA_FLAGS_READ_ONLY);
 
     mapper.AddMember("correctionChecksumFailures", &gps_rtk_misc_t::correctionChecksumFailures, DATA_TYPE_UINT32, "int", "Correction input checksum failures", DATA_FLAGS_READ_ONLY);
-    mapper.AddMember("timeToFirstFixMs", &gps_rtk_misc_t::timeToFirstFixMs, DATA_TYPE_UINT32, "ms", "Time to first RTK fix", DATA_FLAGS_READ_ONLY);
 }
 
 static void PopulateMapGpsRaw(data_set_t data_set[DID_COUNT], uint32_t did)

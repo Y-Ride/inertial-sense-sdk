@@ -7,6 +7,7 @@ from os.path import normpath, basename
 from threading import Thread
 import time
 from pathlib import Path
+import shutil
 import sys
 import threading
 
@@ -32,6 +33,7 @@ class SuperNPP():
         print("  Directory: ", self.directory)
         print("  config_serials:", self.config_serials)
         print("  startMode: ", self.startMode)
+        self.remove_post_processed_dirs(self.directory)
         self.findLogFiles(self.directory)
             
     def getSerialNumbers(self):
@@ -46,7 +48,7 @@ class SuperNPP():
     def findLogFiles(self, directory):
         # print("findLogFiles: ", directory)
         for file in os.listdir(directory):
-            if ".sdat" in file or ".dat" in file or ".raw" in file:
+            if (".dat" in file or ".raw" in file) and (not "base_station.raw" in file):
                 self.subdirs.append(directory)
                 break
         # Recursively search for data in sub directories
@@ -57,6 +59,23 @@ class SuperNPP():
             if "post_processed" in subdir:
                 continue
             self.findLogFiles(subdir2)
+
+    def remove_post_processed_dirs(self, base_dir):
+        """
+        Recursively remove all directories named 'post_processed' in the specified base directory.
+
+        Args:
+            base_dir (str): The path to the base directory to search within.
+        """
+        for root, dirs, files in os.walk(base_dir, topdown=False):
+            for dir_name in dirs:
+                if dir_name == "post_processed":
+                    dir_path = os.path.join(root, dir_name)
+                    try:
+                        shutil.rmtree(dir_path)
+                        print(f"Removed directory: {dir_path}")
+                    except Exception as e:
+                        print(f"Failed to remove {dir_path}: {e}")
 
     def print_file_contents(self, file_path):
         with open(file_path, 'r') as file:
@@ -79,16 +98,17 @@ class SuperNPP():
             thread.join()
 
         # Record list of logs to be processed
-        logListFilename = directory+"/test_summary.txt"        
+        logListFilename = self.directory+"/test_summary.txt"        
         try:
             os.remove(logListFilename)      # Remove old file
         except OSError:
             pass
 
-        f = open(logListFilename, "w")
+        results = []
         for subdir in self.subdirs:
             sdir = os.path.normpath(str(subdir) + "/post_processed")
             nppPrint("   " + sdir)
+
             ### Compute RMS ##################################################
             if self.computeRMS:
                 passRMS = 0
@@ -97,17 +117,19 @@ class SuperNPP():
                     self.log.calculateRMS()
                     passRMS = self.log.printRMSReport()
                     if passRMS == 1:
-                        f.write("[PASSED] " + sdir + "\n")
+                        results.append("[PASSED] " + sdir)
                         self.rmsPassResults.append(sdir)
                     else:
-                        f.write("[FAILED] " + sdir + "\n")
+                        results.append("[FAILED] " + sdir)
                         self.rmsFailResults.append(sdir)
                 else:
-                    f.write("[NODATA] " + sdir + "\n")
+                    results.append("[NODATA] " + sdir)
             else:
-                f.write("[      ] " + sdir + "\n")
+                results.append("[      ] " + sdir)
             ### Compute RMS ##################################################
-        f.close()
+        with open(logListFilename, "w") as f:
+            f.write("\n".join(results))
+
         print('-------------------------------------------------------------')
         print(os.path.basename(logListFilename))
         self.print_file_contents(logListFilename)
@@ -118,29 +140,28 @@ class SuperNPP():
         # subdir = os.path.basename(os.path.normpath(folder))
         (folder, subdir) = os.path.split(folder)
 
+        # Find serial numbers, and determine the log type
+        logType = "DAT"
         if config_serials == ["ALL"]:
             serials = []
             for file in os.listdir(os.path.join(folder,subdir)):
-                if (".sdat" in file or ".dat" in file or ".raw" in file) and (not "base_station.raw" in file):
-                    ser = int(re.sub('[^0-9]','', file.split("_")[1]))
-                    if ser not in serials:
-                        serials.append(ser)
+                if (".dat" in file or ".raw" in file) and (not "base_station.raw" in file):
+                    if ".dat" in file:
+                        logType = "DAT"
+                    elif ".raw" in file:
+                        logType = "RAW"
+
+                    serNum = int(re.sub('[^0-9]','', file.split("_")[1]))
+                    if serNum and (serNum not in serials):
+                        serials.append(serNum)
         else:
             serials = config_serials
 
         print("serial numbers")
         print(serials)
 
-        # Determine the log type
-        logType = "DAT"
-        for file in os.listdir(os.path.join(folder,subdir)):
-            if ".sdat" in file:
-                logType = "SDAT"
-            elif ".dat" in file:
-                logType = "DAT"
-            elif ".raw" in file:
-                logType = "RAW"
-
+        if os.name == 'posix':
+            cmds = ['./navpp -d "' + folder + '" -s ' + str(s) + " -sd " + subdir + " -l " + logType for s in serials]
         file_path = os.path.dirname(os.path.realpath(__file__))
         npp_build_folder = os.path.normpath(file_path + '../../../../cpp/NavPostProcess/build')
         if os.name == 'posix':  # Linux
