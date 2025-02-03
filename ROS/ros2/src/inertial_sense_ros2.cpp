@@ -1571,7 +1571,7 @@ void InertialSenseROS::GPS_pos_callback(eDataIDs DID, const gps_pos_t *const msg
             msg_gps1.hacc = msg->hAcc;
             msg_gps1.vacc = msg->vAcc;
             msg_gps1.pdop = msg->pDop;
-            publishGPS1();
+            // publishGPS1();
         }
         break;
 
@@ -1596,7 +1596,7 @@ void InertialSenseROS::GPS_pos_callback(eDataIDs DID, const gps_pos_t *const msg
             msg_gps2.hacc = msg->hAcc;
             msg_gps2.vacc = msg->vAcc;
             msg_gps2.pdop = msg->pDop;
-            publishGPS2();
+            // publishGPS2();
         }
         break;
     }
