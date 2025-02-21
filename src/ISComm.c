@@ -169,14 +169,7 @@ void is_comm_init(is_comm_instance_t* c, uint8_t *buffer, int bufferSize)
     c->rxBuf.head = c->rxBuf.tail = c->rxBuf.scan = buffer;
     
     // Set parse enable flags
-    c->config.enabledMask = 
-        ENABLE_PROTOCOL_ISB
-        | ENABLE_PROTOCOL_NMEA
-        | ENABLE_PROTOCOL_UBLOX
-        | ENABLE_PROTOCOL_RTCM3
-        // | ENABLE_PROTOCOL_SONY
-        // | ENABLE_PROTOCOL_SPARTN
-        ;
+    c->config.enabledMask = DEFAULT_PROTO_MASK;
     
     c->rxPkt.data.ptr = c->rxBuf.start;
     c->rxErrorState = 1;
@@ -187,23 +180,16 @@ int is_comm_check(is_comm_instance_t* c, uint8_t *buffer, int bufferSize)
 {
     // Clear buffer and initialize buffer pointers
     if (c->rxBuf.size != (uint32_t)bufferSize) { return -1; }
-    if (c->rxBuf.start != buffer) { return -1; }
-    if (c->rxBuf.end != buffer + bufferSize) { return -1; }
-    if (c->rxBuf.head < c->rxBuf.start || c->rxBuf.head > c->rxBuf.end) { return -1; }
-    if (c->rxBuf.tail < c->rxBuf.start || c->rxBuf.tail > c->rxBuf.end) { return -1; }
-    if (c->rxBuf.scan < c->rxBuf.start || c->rxBuf.scan > c->rxBuf.end) { return -1; }
+    if (c->rxBuf.start != buffer) { return -2; }
+    if (c->rxBuf.end != buffer + bufferSize) { return -3; }
+    if (c->rxBuf.head < c->rxBuf.start || c->rxBuf.head > c->rxBuf.end) { return -4; }
+    if (c->rxBuf.tail < c->rxBuf.start || c->rxBuf.tail > c->rxBuf.end) { return -5; }
+    if (c->rxBuf.scan < c->rxBuf.start || c->rxBuf.scan > c->rxBuf.end) { return -6; }
     
     // Set parse enable flags
-    if (c->config.enabledMask != 
-        (ENABLE_PROTOCOL_ISB
-        | ENABLE_PROTOCOL_NMEA
-        | ENABLE_PROTOCOL_UBLOX
-        | ENABLE_PROTOCOL_RTCM3
-        // | ENABLE_PROTOCOL_SONY
-        // | ENABLE_PROTOCOL_SPARTN 
-        )) { return -1; }
+    if ((c->config.enabledMask & DEFAULT_PROTO_MASK) != DEFAULT_PROTO_MASK) { return -7; }
     
-    if (c->rxPkt.data.ptr != NULL && (c->rxPkt.data.ptr < c->rxBuf.start || c->rxPkt.data.ptr > c->rxBuf.end)) { return -1; }
+    if (c->rxPkt.data.ptr != NULL && (c->rxPkt.data.ptr < c->rxBuf.start || c->rxPkt.data.ptr > c->rxBuf.end)) { return -8; }
 
     // Everything matches
     return 0;
@@ -1171,8 +1157,16 @@ int is_comm_write_isb_precomp_to_buffer(uint8_t *buf, uint32_t buf_size, is_comm
 
 int is_comm_write_isb_precomp_to_port(pfnIsCommPortWrite portWrite, unsigned int port, is_comm_instance_t* comm, packet_t *pkt)
 {
+    if (pkt->data.size + sizeof(packet_hdr_t) + 4 > PKT_BUF_SIZE)
+    {	// Packet size + offset + payload + footer is too large
+        return -1;
+    }
+
     // Set checksum using precomputed header checksum
     pkt->checksum = pkt->hdrCksum;
+
+#if 1
+    // Write packet to port in multiple write calls
 
     // Write packet to port
     int n = portWrite(port, (uint8_t*)&(pkt->hdr), sizeof(packet_hdr_t));  // Header
@@ -1191,6 +1185,36 @@ int is_comm_write_isb_precomp_to_port(pfnIsCommPortWrite portWrite, unsigned int
     }
 
     n += portWrite(port, (uint8_t*)&(pkt->checksum), 2);                   // Footer (checksum)
+#else
+    // Write packet to port in a single write call
+
+    uint8_t buf[PKT_BUF_SIZE];
+    uint8_t *ptr = buf;
+
+    memcpy(ptr, (uint8_t*)&(pkt->hdr), sizeof(packet_hdr_t));       // Header
+    ptr += sizeof(packet_hdr_t);
+
+    if (pkt->offset)
+    {
+        memcpy(ptr, (uint8_t*)&(pkt->offset), 2);                   // Offset (optional)
+        ptr += 2;
+    }
+
+    if (pkt->data.size)
+    {
+        // Include payload in checksum calculation
+        pkt->checksum = is_comm_isb_checksum16(pkt->checksum, (uint8_t*)pkt->data.ptr, pkt->data.size);
+
+        memcpy(ptr, (uint8_t*)pkt->data.ptr, pkt->data.size);       // Payload
+        ptr += pkt->data.size;
+    }
+
+    memcpy(ptr, (uint8_t*)&(pkt->checksum), 2);                     // Footer (checksum)
+    ptr += 2;
+
+    // Write packet to port (all in one write)
+    int n = portWrite(port, buf, ptr - buf);
+#endif
 
     // Increment Tx count
     comm->txPktCount++;
