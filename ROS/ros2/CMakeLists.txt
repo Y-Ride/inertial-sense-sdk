@@ -16,7 +16,15 @@ find_package(rosidl_default_generators REQUIRED)
 find_package(ament_cmake_gtest REQUIRED)
 find_package(Threads)
 
+# Define Ros2
 add_definitions(-DROS2)
+
+# Define if using Ros2 'Humble' or 'Jazzy
+if($ENV{ROS_DISTRO} STREQUAL "jazzy")
+    add_definitions(-DROS_DISTRO_JAZZY)
+elseif($ENV{ROS_DISTRO} STREQUAL "humble")
+    add_definitions(-DROS_DISTRO_HUMBLE)
+endif()
 
 get_filename_component(RESOLVED_ROS_DIR ${CMAKE_SOURCE_DIR} REALPATH) # Symlink hell
 message(RESOLVED_ROS_DIR="${RESOLVED_ROS_DIR}")
