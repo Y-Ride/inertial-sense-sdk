@@ -25,6 +25,11 @@ if [ "$PARENT_DIR" != "src" ]; then
   exit 1
 fi
 
+# Install sdk dependencies
+set -e
+./scripts/install_sdk_dependencies.sh
+echo "sdk dependencies are successfully installed"
+
 # Check if the symbolic link already exists
 if [ -L "../ros2" ]; then
   echo "Symbolic link '${PARENT_DIR}/ros2' already exists. Removing it..."
