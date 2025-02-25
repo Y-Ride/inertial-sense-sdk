@@ -52,19 +52,19 @@ cd ../.. # Change to the ros2_ws
 colcon build --packages-select InertialSenseSDK inertial_sense_ros2
 
 # Add the source command to .bashrc file if it doen't aleady exist
-LINE="source $(pwd)/install/setup.bash"
+# LINE="source $(pwd)/install/setup.bash"
 
-# Check if the line is already in ~/.bashrc
-if ! grep -Fxq "$LINE" ~/.bashrc; then
-  echo "$LINE" >> ~/.bashrc
-  echo "Added to ~/.bashrc: $LINE"
-else
-  echo "Line already exists in ~/.bashrc"
-fi
+# # Check if the line is already in ~/.bashrc
+# if ! grep -Fxq "$LINE" ~/.bashrc; then
+#   echo "$LINE" >> ~/.bashrc
+#   echo "Added to ~/.bashrc: $LINE"
+# else
+#   echo "Line already exists in ~/.bashrc"
+# fi
 
 # Activate changes to .bashrc file
-echo "Sourcing the ~/.bashrc file"
-source ~/.bashrc
+# echo "Sourcing the ~/.bashrc file"
+# source ~/.bashrc
 
 # Successfull completion!!! Oh ya!!!
 echo -e "\nSetup complete!\n"
