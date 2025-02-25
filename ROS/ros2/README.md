@@ -35,7 +35,7 @@ This ROS2 (Jazzy) package, uses the inertial-sense-sdk as a submodule. Clone thi
 ```bash
 mkdir -p ros2_ws/src
 cd ros2_ws/src
-git clone --recursive git@github.com:Y-Ride/inertial-sense-sdk.git
+git clone --recursive https://github.com/Y-Ride/inertial-sense-sdk.git
 ```
 then, create a symbolic link to the `ROS/ros2` directory in the `ros2_ws/src` directory using the command `sudo ln -s inertial-sense-sdk/ROS/ros2` (run this from `ros2_ws/src`). This
 allows `colcon build` to find the appropriate package to build.
@@ -49,6 +49,8 @@ For ROS2 to run properly, `. install/setup.bash` in the ROS2 workspace (ros2_ws)
 ```
 
 You will need to run this command on every new shell you open to have access to the ROS commands, unless you add this line to your `~/.bashrc`.
+
+> A script is provided under `scripts/build_ros2.sh` to help with the above process. Download the repo into a `ros2_ws/src` directory and run this script to finish setting up the ros2 envirnment. Note: only tested using ros2 humble and jazzy in docker environment.
 
 ### Important
 
