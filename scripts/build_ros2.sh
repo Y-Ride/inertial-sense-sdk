@@ -40,9 +40,31 @@ fi
 sudo ln -s "$(pwd)/ROS/ros2" "../ros2"
 echo "Create symbolic link for ros2 directory"
 
+# Source the correct ros2 distro
+if [ -z "$ROS_DISTRO" ]; then
+  echo "Error: ROS_DISTRO environment variable is not set."
+  exit 1
+fi
+source "/opt/ros/${ROS_DISTRO}/setup.bash"
+
 # Build the ros2 packages
 cd ../.. # Change to the ros2_ws
-set -e
 colcon build --packages-select InertialSenseSDK inertial_sense_ros2
 
+# Add the source command to .bashrc file if it doen't aleady exist
+LINE="source $(pwd)/install/setup.bash"
+
+# Check if the line is already in ~/.bashrc
+if ! grep -Fxq "$LINE" ~/.bashrc; then
+  echo "$LINE" >> ~/.bashrc
+  echo "Added to ~/.bashrc: $LINE"
+else
+  echo "Line already exists in ~/.bashrc"
+fi
+
+# Activate changes to .bashrc file
+echo "Sourcing the ~/.bashrc file"
+source ~/.bashrc
+
+# Successfull completion!!! Oh ya!!!
 echo -e "\nSetup complete!\n"
