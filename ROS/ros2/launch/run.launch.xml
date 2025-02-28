@@ -1,0 +1,14 @@
+<launch>
+    <node name="inertial_sense_ros2_node"
+          pkg="inertial_sense_ros2"
+          exec="inertial_sense_ros2_node"
+          output="screen">
+        <param from="$(find-pkg-share inertial_sense_ros2)/launch/run_params.yaml"/>
+    </node>
+</launch>
+
+<!-- 
+<launch>
+	<node name="inertial_sense_node" pkg="inertial_sense_ros" type="inertial_sense_node" 
+		output="screen" args="$(find inertial_sense_ros)/launch/example_params.yaml"/>
+</launch> -->
