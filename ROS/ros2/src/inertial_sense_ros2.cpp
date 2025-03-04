@@ -145,7 +145,8 @@
      if (rs_.odom_ins_enu.enabled)           { rs_.odom_ins_enu.pub_odometry  = nh_->create_publisher<nav_msgs::msg::Odometry>(rs_.odom_ins_enu.topic, 1); }
      if (rs_.odom_ins_ecef.enabled)          { rs_.odom_ins_ecef.pub_odometry = nh_->create_publisher<nav_msgs::msg::Odometry>(rs_.odom_ins_ecef.topic, 1); }
      if (rs_.inl2_states.enabled)            { rs_.inl2_states.pub_inl2   = nh_->create_publisher<inertial_sense_ros2::msg::INL2States>(rs_.inl2_states.topic, 1); }
- 
+    
+    if (rs_.imu_raw.enabled)                { rs_.imu_raw.pub_imu_raw = nh_->create_publisher<sensor_msgs::msg::Imu>(rs_.imu_raw.topic, 1); }
     if (rs_.pimu.enabled)                   { rs_.pimu.pub_pimu = nh_->create_publisher<inertial_sense_ros2::msg::PIMU>(rs_.pimu.topic, 1); }
     if (rs_.imu.enabled)                    { rs_.imu.pub_imu = nh_->create_publisher<sensor_msgs::msg::Imu>(rs_.imu.topic, 1); }
     if (rs_.magnetometer.enabled)           { rs_.magnetometer.pub_bfield = nh_->create_publisher<sensor_msgs::msg::MagneticField>(rs_.magnetometer.topic, 1); }
@@ -293,6 +294,10 @@
      // Sensors
      YAML::Node sensorsNode = ph.node(node, "sensors");
      YAML::Node sensorsMsgs = ph.node(sensorsNode, "messages", 2);
+
+     bool imu_raw_enable = nh_->declare_parameter<bool>("msg/imu_raw/enable", false);
+     int imu_raw_period = nh_->declare_parameter<int>("msg/imu_raw/period", 1); 
+     ph.msgParams(rs_.imu_raw, "imu_raw", "", false, imu_raw_period, imu_raw_enable);
  
      bool imu_enable = nh_->declare_parameter<bool>("msg/imu/enable", false);
      int imu_period = nh_->declare_parameter<int>("msg/imu/period", 1);
@@ -641,6 +646,14 @@
          //CONFIG_STREAM(rs_.gps2_info, DID_GPS2_SAT, gps_sat_t, GPS_info_callback); //not currrently working - ignore for now
      }
      //CONFIG_STREAM(rs_.gpsbase_raw, DID_GPS_BASE_RAW, gps_raw_t, GPS_raw_callback); //not currrently working
+
+     if (rs_.imu_raw.enabled)
+     {  
+        SET_CALLBACK(DID_IMU_RAW, imu_t, imu_raw_callback, rs_.imu_raw.period);
+        if (!firstrun)
+            return;
+        CONFIG_STREAM(rs_.imu_raw, DID_IMU_RAW, imu_t, imu_raw_callback); // Not sure if this ia alreay done by CONFIG_STREAM(rs_.pimu, DID_PIMU, pimu_t, preint_IMU_callback);
+     }
  
      CONFIG_STREAM(rs_.magnetometer, DID_MAGNETOMETER, magnetometer_t, mag_callback);
      CONFIG_STREAM(rs_.barometer, DID_BAROMETER, barometer_t, baro_callback);
@@ -1817,6 +1830,28 @@
      baro_msg.variance = msg->barTemp;
      if (rs_.barometer.pub_fpres != NULL)
          rs_.barometer.pub_fpres->publish(baro_msg);
+ }
+
+ void InertialSenseROS::imu_raw_callback(eDataIDs DID, const imu_t *const msg)
+ {
+    if (rs_.imu_raw.enabled)
+    {
+        rs_.imu_raw.streamingCheck(DID);
+
+        if (rs_.imu_raw.pub_imu_raw->get_subscription_count() > 0)
+        {
+            msg_imu_raw.header.stamp = ros_time_from_start_time(msg->time);
+            msg_imu_raw.header.frame_id = frame_id_;
+            msg_imu_raw.angular_velocity.x = msg->I.pqr[0];
+            msg_imu_raw.angular_velocity.y = msg->I.pqr[1];
+            msg_imu_raw.angular_velocity.z = msg->I.pqr[2];
+            msg_imu_raw.linear_acceleration.x = msg->I.acc[0];
+            msg_imu_raw.linear_acceleration.y = msg->I.acc[1];
+            msg_imu_raw.linear_acceleration.z = msg->I.acc[2];
+            rs_.imu_raw.pub_imu_raw->publish(msg_imu_raw);
+        }
+        
+    }
  }
  
  void InertialSenseROS::preint_IMU_callback(eDataIDs DID, const pimu_t *const msg)

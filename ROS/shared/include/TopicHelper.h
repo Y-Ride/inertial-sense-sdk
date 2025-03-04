@@ -96,6 +96,7 @@
      rclcpp::Publisher<inertial_sense_ros2::msg::INL2States>::SharedPtr pub_inl2;
      rclcpp::Publisher<inertial_sense_ros2::msg::PIMU>::SharedPtr pub_pimu;
      rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr pub_imu;
+     rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr pub_imu_raw;
      rclcpp::Publisher<sensor_msgs::msg::MagneticField>::SharedPtr pub_bfield;
      rclcpp::Publisher<sensor_msgs::msg::FluidPressure>::SharedPtr pub_fpres;
      rclcpp::Publisher<inertial_sense_ros2::msg::GPS>::SharedPtr pub_gps;
