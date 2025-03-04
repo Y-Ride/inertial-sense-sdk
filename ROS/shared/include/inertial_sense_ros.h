@@ -280,6 +280,7 @@
      void GPS_info_callback(eDataIDs DID, const gps_sat_t *const msg);
      void mag_callback(eDataIDs DID, const magnetometer_t *const msg);
      void baro_callback(eDataIDs DID, const barometer_t *const msg);
+     void imu_raw_callback(eDataIDs DID, const imu_t *const msg);
      void preint_IMU_callback(eDataIDs DID, const pimu_t *const msg);
      void strobe_in_time_callback(eDataIDs DID, const strobe_in_time_t *const msg);
      void diagnostics_callback( ROS1_TIMEREVENT_ARG );
@@ -316,7 +317,8 @@
          TopicHelper odom_ins_ecef;
          TopicHelper odom_ins_enu;
          TopicHelper inl2_states;
- 
+         
+         TopicHelper imu_raw;
          TopicHelper imu;
          TopicHelper pimu;
          TopicHelper magnetometer;
@@ -499,6 +501,7 @@
      nav_msgs::msg::Odometry msg_odom_enu;
      msg::INL2States msg_inl2_states;
      sensor_msgs::msg::Imu msg_imu;
+     sensor_msgs::msg::Imu msg_imu_raw;
      msg::PIMU msg_pimu;
      msg::GPS msg_gps1;
      msg::GPS msg_gps2;
