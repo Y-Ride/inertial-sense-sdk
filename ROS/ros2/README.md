@@ -108,8 +108,10 @@ Topics are enabled and disabled using parameters.  By default, only the `ins` to
 - `inl2_states` (inertial_sense_ros2/msg/INL2States)
    -  INS Extended Kalman Filter (EKF) states [DID_INL2_STATES](https://docs.inertialsense.com/user-manual/com-protocol/DID-descriptions/#did_inl2_states) Definition
 
+- `imu_raw` (sensor_msgs/msg/Imu)
+   -  Raw Imu measurements from DID_IMU_RAW (NED frame). Default 1000 Hz. 
 - `imu`(sensor_msgs/msg/Imu)
-   -  Raw Imu measurements from IMU1 (NED frame)
+   -  Filtered Imu measurements
 - `pimu` (inertial_sense_ros2/msg/pimu)
    -  preintegrated coning and sculling integrals of IMU measurements
 - `mag` (sensor_msgs/msg/MagneticField)

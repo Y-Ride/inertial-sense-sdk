@@ -1838,8 +1838,8 @@
     {
         rs_.imu_raw.streamingCheck(DID);
 
-        if (rs_.imu_raw.pub_imu_raw->get_subscription_count() > 0)
-        {
+        // if (rs_.imu_raw.pub_imu_raw->get_subscription_count() > 0) // Potentially causing issues when trying to run a ros2 bag
+        // {
             msg_imu_raw.header.stamp = ros_time_from_start_time(msg->time);
             msg_imu_raw.header.frame_id = frame_id_;
             msg_imu_raw.angular_velocity.x = msg->I.pqr[0];
@@ -1849,7 +1849,7 @@
             msg_imu_raw.linear_acceleration.y = msg->I.acc[1];
             msg_imu_raw.linear_acceleration.z = msg->I.acc[2];
             rs_.imu_raw.pub_imu_raw->publish(msg_imu_raw);
-        }
+        // }
         
     }
  }
