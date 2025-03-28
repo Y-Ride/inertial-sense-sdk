@@ -17,6 +17,7 @@
  ***************************************************************************************/
 
  #include "inertial_sense_ros.h"
+ #include "gps_to_virtual_serial.hpp"
 
  #include <chrono>
  #include <stddef.h>
@@ -60,6 +61,11 @@
     //    ros::console::notifyLoggerLevelsChanged();
     //}
      load_params(paramNode);
+
+    //  #ifdef SEND_GPS_NMEA_TO_VIRT_SERIAL
+    //     // gps_to_virt_serial = GPSToVirtSerial(static_cast<std::string>(VIRT_SERIAL_PORT)); // e.g., "/dev/tnt1"
+    //     gps_to_virt_serial = GPSToVirtSerial("/dev/tnt1"); // e.g., "/dev/tnt1"
+    //  #endif
  }
  
  void InertialSenseROS::initialize(bool configFlashParameters)
@@ -652,7 +658,7 @@
         SET_CALLBACK(DID_IMU_RAW, imu_t, imu_raw_callback, rs_.imu_raw.period);
         if (!firstrun)
             return;
-        CONFIG_STREAM(rs_.imu_raw, DID_IMU_RAW, imu_t, imu_raw_callback); // Not sure if this ia alreay done by CONFIG_STREAM(rs_.pimu, DID_PIMU, pimu_t, preint_IMU_callback);
+        CONFIG_STREAM(rs_.imu_raw, DID_IMU_RAW, imu_t, imu_raw_callback);
      }
  
      CONFIG_STREAM(rs_.magnetometer, DID_MAGNETOMETER, magnetometer_t, mag_callback);
@@ -1565,7 +1571,7 @@
  }
  
  
- void InertialSenseROS::GPS_pos_callback(eDataIDs DID, const gps_pos_t *const msg)
+ void InertialSenseROS::GPS_pos_callback(eDataIDs DID, const gps_pos_t *const msg) // This is called before the velocity callback is called. 
  {
      static eDataIDs primaryGpsDid = DID_GPS2_POS;  // Use GPS2 if GPS1 is disabled
  
@@ -1579,6 +1585,7 @@
          if (rs_.gps1.enabled && msg->status & GPS_STATUS_FIX_MASK)
          {
              msg_gps1.header.stamp = ros_time_from_week_and_tow(msg->week, msg->timeOfWeekMs / 1.0e3);
+            //  RCLCPP_INFO(rclcpp::get_logger("gps1_pos_callback"), "GPS1 position recieved at %d seconds and nanoseconds %d\n", msg_gps1.header.stamp.sec, msg_gps1.header.stamp.nanosec);
              msg_gps1.week = msg->week;
              msg_gps1.status = msg->status;
              msg_gps1.header.frame_id = frame_id_;
@@ -1594,7 +1601,7 @@
              msg_gps1.hacc = msg->hAcc;
              msg_gps1.vacc = msg->vAcc;
              msg_gps1.pdop = msg->pDop;
-             // publishGPS1();
+            //  publishGPS1();
          }
          break;
  
@@ -1619,13 +1626,19 @@
              msg_gps2.hacc = msg->hAcc;
              msg_gps2.vacc = msg->vAcc;
              msg_gps2.pdop = msg->pDop;
-             // publishGPS2();
+            //  publishGPS2();
          }
          break;
      }
  
      if (primaryGpsDid == DID)
-     {
+     {   
+         #ifdef SEND_GPS_NMEA_TO_VIRT_SERIAL
+         if (primaryGpsDid == DID_GPS1_POS)
+            gps_to_virt_serial.write_msg_to_nmea_to_serial(&msg_gps1);
+         else
+            gps_to_virt_serial.write_msg_to_nmea_to_serial(&msg_gps2);
+         #endif
          GPS_week_ = msg->week;
          GPS_towOffset_ = msg->towOffset;
  
@@ -1693,11 +1706,6 @@
              gps2_velEcef.vector.y = msg->vel[1];
              gps2_velEcef.vector.z = msg->vel[2];
              publishGPS2();
- 
- 
- 
- 
- 
          }
          break;
      }
@@ -1705,7 +1713,12 @@
  
  void InertialSenseROS::publishGPS1()
  {
-     double dt = (gps1_velEcef.header.stamp.sec - msg_gps1.header.stamp.sec);
+    //  double dt = (gps1_velEcef.header.stamp.sec - msg_gps1.header.stamp.sec);
+    //  double vel_time = (static_cast<double>(gps1_velEcef.header.stamp.sec) + static_cast<double>(gps1_velEcef.header.stamp.nanosec) * 1e-9);
+    //  double pos_time = (static_cast<double>(msg_gps1.header.stamp.sec) + static_cast<double>(msg_gps1.header.stamp.nanosec) * 1e-9);
+    //  RCLCPP_INFO(rclcpp::get_logger("publishGPS1"), "dt: %f seconds; vel: %f pos: %f", dt, vel_time, pos_time);
+     double dt = ((static_cast<double>(gps1_velEcef.header.stamp.sec) + static_cast<double>(gps1_velEcef.header.stamp.nanosec) * 1e-9) 
+                - (static_cast<double>(msg_gps1.header.stamp.sec) + static_cast<double>(msg_gps1.header.stamp.nanosec) * 1e-9));
      if (abs(dt) < 2.0e-3)
      {
          msg_gps1.vel_ecef = gps1_velEcef.vector;

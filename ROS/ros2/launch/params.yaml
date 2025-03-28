@@ -133,7 +133,7 @@ sensors:
 
 gps1:
   type: 'M8'
-  antenna_offset: [-1, 0, 0]                     # X,Y,Z offset in meters in Sensor Frame to GPS 1 antenna
+  antenna_offset: [0.8382, -0.0635, -1.36525]                     # X,Y,Z offset in meters in Sensor Frame to GPS 1 antenna
   # gpsTimeUserDelay: 0.0
   messages:
 #     pos_vel:
@@ -141,7 +141,7 @@ gps1:
 #       enable: true
 #       period: 1
     navsatfix:
-      topic: "/NavSatFix"                        # /navsatfix
+      topic: "NavSatFix"                        # /navsatfix
       enable: false
     info:
       topic: "gps1/info"                        # inertialsense/gps1/info
@@ -174,7 +174,7 @@ gps1:
 gps2:
   enabled: true
   type: 'M8'
-  antenna_offset: [1, 0, 0]                     # X,Y,Z offset in meters in Sensor Frame to GPS 1 antenna
+  antenna_offset: [-2.4511, -0.0635, -1.36525]                     # X,Y,Z offset in meters in Sensor Frame to GPS 1 antenna
   # gpsTimeUserDelay: 0.0
   messages:
     pos_vel:

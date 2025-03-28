@@ -39,7 +39,7 @@
  #include <chrono>
  #include <memory>
  
-     #if defined(ROS_DISTRO_JAZZY)
+ #if defined(ROS_DISTRO_JAZZY)
      // Jazzy-specific includes or definitions
      #include "rclcpp/rclcpp/rclcpp.hpp"
      #include "rclcpp/rclcpp/timer.hpp"
@@ -53,7 +53,7 @@
      #include "geometry_msgs/geometry_msgs/msg/pose_with_covariance_stamped.hpp"
      #include "diagnostic_msgs/diagnostic_msgs/msg/diagnostic_array.hpp"
  
-     #elif defined(ROS_DISTRO_HUMBLE)
+ #elif defined(ROS_DISTRO_HUMBLE)
      // Humble-specific includes or definitions
      #include "rclcpp/rclcpp.hpp"
      #include "rclcpp/timer.hpp"
@@ -67,7 +67,7 @@
      #include "geometry_msgs/msg/pose_with_covariance_stamped.hpp"
      #include "diagnostic_msgs/msg/diagnostic_array.hpp"
  
-     #endif
+ #endif
  
  #include "sensor_msgs/msg/imu.hpp"
  #include "sensor_msgs/msg/magnetic_field.hpp"
@@ -89,6 +89,11 @@
  #include "inertial_sense_ros2/msg/didins2.hpp"
  #include "inertial_sense_ros2/msg/didins1.hpp"
  #include "inertial_sense_ros2/msg/didins4.hpp"
+
+ #ifdef SEND_GPS_NMEA_TO_VIRT_SERIAL
+         #include "gps_to_virtual_serial.hpp"
+ #endif
+
  using namespace rclcpp;
  using namespace inertial_sense_ros2;
  #endif
@@ -536,6 +541,12 @@
      gps_vel_t gps1_vel;
      gps_vel_t gps2_vel;
      float poseCov_[36], twistCov_[36];
+
+     #ifdef SEND_GPS_NMEA_TO_VIRT_SERIAL
+        // Virtual serial port for NMEA output
+        // GPSToVirtSerial gps_to_virt_serial = GPSToVirtSerial(static_cast<std::string>(VIRT_SERIAL_PORT)); // e.g., "/dev/tnt1"; // e.g., "/dev/tnt1"
+        GPSToVirtSerial gps_to_virt_serial = GPSToVirtSerial("/dev/tnt1"); // e.g., "/dev/tnt1"; // e.g., "/dev/tnt1"
+     #endif
  
      // Connection to the uINS
      InertialSense IS_;

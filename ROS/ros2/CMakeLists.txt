@@ -26,6 +26,10 @@ elseif($ENV{ROS_DISTRO} STREQUAL "humble")
     add_definitions(-DROS_DISTRO_HUMBLE)
 endif()
 
+# Define if you want to send gps nmea string to virtual serial port
+add_definitions(-DSEND_GPS_NMEA_TO_VIRT_SERIAL)
+add_compile_definitions(VIRT_SERIAL_PORT="/dev/tnt1")
+
 get_filename_component(RESOLVED_ROS_DIR ${CMAKE_SOURCE_DIR} REALPATH) # Symlink hell
 message(RESOLVED_ROS_DIR="${RESOLVED_ROS_DIR}")
 
@@ -98,6 +102,7 @@ add_executable(${PROJECT_NAME}_node
     shared/src/ParamHelper.cpp
     shared/src/RtkRover.cpp
     shared/src/RtkBase.cpp
+    shared/src/gps_to_virtual_serial.cpp
 )
 
 rosidl_get_typesupport_target(cpp_typesupport_target "${PROJECT_NAME}" "rosidl_typesupport_cpp")
@@ -111,6 +116,7 @@ ament_add_gtest(test_${PROJECT_NAME}
     shared/src/ParamHelper.cpp
     shared/src/RtkRover.cpp
     shared/src/RtkBase.cpp
+    shared/src/gps_to_virtual_serial.cpp
     test/test_basic_unit_tests.cpp
     test/test_client_reconnect.cpp
     test/test_communications.cpp
