@@ -52,8 +52,9 @@ ref_lla: [0.0, 0.0, 0.0]
 # platform: 15                                    # PLATFORM_CFG_TYPE_IG1_G2
 
 # Overwrite IMX ioConfig (see eIoConfig)
+# ioConfig: 0x00000000  # Original
 # ioConfig: 0x00112044
-# ioConfig: 0x26CA060       # EVB2: GPS1 Ser1 F9P, GPS2 Ser2 F9P, PPS G8
+# ioConfig: 0x026CA060       # EVB2: GPS1 Ser1 F9P, GPS2 Ser2 F9P, PPS G8
 # ioConfig: 0x025CA060      # EVB2: GPS1 Ser1 F9P, GPS2 Ser0 F9P, PPS G8
 # ioConfig: 0x0244a060      # EVB2: GPS1 Ser1 F9P, GPS2 disabled F9P, PPS G8
 
@@ -134,12 +135,12 @@ sensors:
 gps1:
   type: 'M8'
   antenna_offset: [0.8382, -0.0635, -1.36525]                     # X,Y,Z offset in meters in Sensor Frame to GPS 1 antenna
-  # gpsTimeUserDelay: 0.0
+  gpsTimeUserDelay: 0.0
   messages:
-#     pos_vel:
-#       topic: "gps1/pos_vel"
-#       enable: true
-#       period: 1
+    pos_vel:
+      topic: "gps1/pos_vel"
+      enable: true
+      period: 1
     navsatfix:
       topic: "NavSatFix"                        # /navsatfix
       enable: false
@@ -164,18 +165,18 @@ gps1:
 #         topic: "rel"
 #       info:
 #         topic: "info"
-#     compass:
-#       topic: "compass"
-#       rel:
-#         topic: "rel"
-#       info:
-#         topic: "info"
+    compass:
+      topic: "compass"
+      rel:
+        topic: "rel"
+      info:
+        topic: "info"
 
 gps2:
   enabled: true
   type: 'M8'
   antenna_offset: [-2.4511, -0.0635, -1.36525]                     # X,Y,Z offset in meters in Sensor Frame to GPS 1 antenna
-  # gpsTimeUserDelay: 0.0
+  gpsTimeUserDelay: 0.0
   messages:
     pos_vel:
       topic: "gps2/pos_vel"

@@ -122,7 +122,7 @@
  
          if (configFlashParameters)
          {   // Set IMX flash parameters (flash write) after everything else so processor stall doesn't interfere with communications.
-             //configure_flash_parameters();
+             // configure_flash_parameters();
          }
      }
  }
@@ -821,7 +821,7 @@
      bool reboot = false;
      nvm_flash_cfg_t current_flash_cfg;
      IS_.FlashConfig(current_flash_cfg);
-     //RCLCPP_INFO(rclcpp::get_logger("E"),"InertialSenseROS: Configuring flash: \nCurrent: %i, \nDesired: %i\n", current_flash_cfg.ioConfig, ioConfig_);
+    //  RCLCPP_INFO(rclcpp::get_logger("E"),"InertialSenseROS: Configuring flash: \nCurrent: %i, \nDesired: %i\n", current_flash_cfg.ioConfig, ioConfig_);
  
      if (current_flash_cfg.startupNavDtMs != ins_nav_dt_ms_)
      {
@@ -1574,6 +1574,7 @@
  void InertialSenseROS::GPS_pos_callback(eDataIDs DID, const gps_pos_t *const msg) // This is called before the velocity callback is called. 
  {
      static eDataIDs primaryGpsDid = DID_GPS2_POS;  // Use GPS2 if GPS1 is disabled
+     static uint32_t previous_second = 0;
  
      switch (DID)
      {
@@ -1634,10 +1635,15 @@
      if (primaryGpsDid == DID)
      {   
          #ifdef SEND_GPS_NMEA_TO_VIRT_SERIAL
-         if (primaryGpsDid == DID_GPS1_POS)
-            gps_to_virt_serial.write_msg_to_nmea_to_serial(&msg_gps1);
-         else
-            gps_to_virt_serial.write_msg_to_nmea_to_serial(&msg_gps2);
+        //  uint32_t current_second = uint32_t(msg->timeOfWeekMs / 1.0e3);
+        //  if (current_second != previous_second)
+        //  {
+        //     if (primaryGpsDid == DID_GPS1_POS)
+        //         gps_to_virt_serial.write_msg_to_nmea_to_serial(&msg_gps1);
+        //     else
+        //         gps_to_virt_serial.write_msg_to_nmea_to_serial(&msg_gps2);
+        //     previous_second = current_second;
+        //  }
          #endif
          GPS_week_ = msg->week;
          GPS_towOffset_ = msg->towOffset;
@@ -1726,6 +1732,9 @@
          if (rs_.gps1.pub_gps == NULL) {
              initialize();
          }
+         #ifdef SEND_GPS_NMEA_TO_VIRT_SERIAL
+         gps_to_virt_serial.write_msg_to_nmea_to_serial_GGA_RMC(&msg_gps1); // Write nmea string to vertial serial port
+         #endif
          if (rs_.gps1.pub_gps != NULL) {
              if (rs_.gps1.pub_gps->get_subscription_count() > 0)
                  rs_.gps1.pub_gps->publish(msg_gps1);

@@ -30,6 +30,7 @@ public:
     ~GPSToVirtSerial();
 
     void write_msg_to_nmea_to_serial(const inertial_sense_ros2::msg::GPS *msg);
+    void write_msg_to_nmea_to_serial_GGA_RMC(const inertial_sense_ros2::msg::GPS *msg);
 
 private:
     

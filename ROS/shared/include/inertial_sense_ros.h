@@ -544,8 +544,8 @@
 
      #ifdef SEND_GPS_NMEA_TO_VIRT_SERIAL
         // Virtual serial port for NMEA output
-        // GPSToVirtSerial gps_to_virt_serial = GPSToVirtSerial(static_cast<std::string>(VIRT_SERIAL_PORT)); // e.g., "/dev/tnt1"; // e.g., "/dev/tnt1"
-        GPSToVirtSerial gps_to_virt_serial = GPSToVirtSerial("/dev/tnt1"); // e.g., "/dev/tnt1"; // e.g., "/dev/tnt1"
+        GPSToVirtSerial gps_to_virt_serial = GPSToVirtSerial(static_cast<std::string>(VIRT_SERIAL_PORT)); // e.g., "/dev/tnt1"; // e.g., "/dev/tnt1"
+        // GPSToVirtSerial gps_to_virt_serial = GPSToVirtSerial("/dev/tnt1"); // e.g., "/dev/tnt1"; // e.g., "/dev/tnt1"
      #endif
  
      // Connection to the uINS
