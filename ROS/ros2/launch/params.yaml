@@ -141,9 +141,9 @@ gps1:
       topic: "gps1/pos_vel"
       enable: true
       period: 1
-    # navsatfix:
-    #   topic: "gps1/NavSatFix"                        # /navsatfix
-    #   enable: true
+    navsatfix:
+      topic: "gps1/NavSatFix"                        # /navsatfix
+      enable: true
     info:
       topic: "gps1/info"                        # inertialsense/gps1/info
       enable: true
