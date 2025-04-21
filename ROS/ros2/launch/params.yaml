@@ -141,36 +141,36 @@ gps1:
       topic: "gps1/pos_vel"
       enable: true
       period: 1
-    navsatfix:
-      topic: "NavSatFix"                        # /navsatfix
-      enable: false
+    # navsatfix:
+    #   topic: "gps1/NavSatFix"                        # /navsatfix
+    #   enable: true
     info:
       topic: "gps1/info"                        # inertialsense/gps1/info
       enable: true
       period: 5                                 # Publish every 1 second (200ms x 5)
-#     raw:
-#       topic: "gps1/raw"                         # Observation "/obs", ephemeris "/eph", and GLONASS ephemeris "/gep" are appended to the end of the topic name.  (i.e. topic="gps1_raw" results is "gps1_raw_obs" published as actual topic)
-#       enable: false
-#       period: 5                                 # Publish every 1 second (200ms x 5)
-#     rtk_pos_rel:
-#       topic: "gps1/pos_vel"
-#       enable: true
-#       period: 1
-#     rel:
-#       enable: true
-#       topic: "rel"
-#     base:
-#       topic: "base"
-#       rel:
-#         topic: "rel"
-#       info:
-#         topic: "info"
-    compass:
-      topic: "compass"
-      rel:
-        topic: "rel"
-      info:
-        topic: "info"
+    # raw:
+    #   topic: "gps1/raw"                         # Observation "/obs", ephemeris "/eph", and GLONASS ephemeris "/gep" are appended to the end of the topic name.  (i.e. topic="gps1_raw" results is "gps1_raw_obs" published as actual topic)
+    #   enable: false
+    #   period: 5                                 # Publish every 1 second (200ms x 5)
+    # rtk_pos_rel:
+    #   topic: "gps1/rtk/pos_vel"
+    #   enable: true
+    #   period: 1
+    # rel:
+    #   enable: true
+    #   topic: "rel"
+    # base:
+    #   topic: "base"
+    #   rel:
+    #     topic: "rel"
+    #   info:
+    #     topic: "info"
+    # compass:
+    #   topic: "compass"
+    #   rel:
+    #     topic: "rel"
+    #   info:
+    #     topic: "info"
 
 gps2:
   enabled: true
@@ -225,31 +225,31 @@ gps2:
 
 # rtk_rover:
 #   correction_destination:                       # this defines which GPSs get RTK Corrections
-#     gps1: positioning                           # Enables RTK precision positioning at GPS1 (RTK corrections are sent to GPS1)
+#     gps1: none                                  # Enables RTK precision positioning at GPS1 (RTK corrections are sent to GPS1)
 #     gps2: compassing                            # Enable RTK compassing (dual GNSS moving baseline RTK) at GPS2
 #     gps3: none                                  # Disable RTK corrections at GPS3
 
-#   positioning_enable: true                     # Enable RTK precision positioning at GPS1
-#   compassing_enable: false                      # Enable RTK compassing (dual GNSS moving baseline RTK) at GPS2
-#   correction_input:
-#     select: ntrip_example                       # Select correction input settings
+#   positioning_enable: false                     # Enable RTK precision positioning at GPS1
+#   compassing_enable: true                      # Enable RTK compassing (dual GNSS moving baseline RTK) at GPS2
+  # correction_input:
+  #   select: ntrip_example                       # Select correction input settings
 
-#     ntrip_example:                              # Rename as needed
-#       type: ntrip                               # configure NTRIP client provider (RTK Rover = TCP Client)
-#       format: RTCM3
-#       ip_address: '66.219.246.93'               # NTRIP service address
-#       ip_port: 7777                             # NTRIP service port
-#       # these following parameters are only valid for "client" modes
-#       mount_point: ''                           # NTRIP service mount-point (if any)
-#       username: ''                              # NTRIP service username (if any)
-#       password: ''                              # NTRIP service password (if any)
-#       connection_attempts:
-#         limit: 1                                # every time we attempt to connect, only try one time
-#         backoff: 2                              # default back off, ignored because only connecting once
-#       watchdog:                                 # connectivity watchdog timer - reconnects if no RTK activity
-#         enable: true
-#         interval: 1                             # check every 1 second for traffic
-#         timeout: 5                              # number of seconds of inactivity before attempting to reconnect
+    # ntrip_example:                              # Rename as needed
+    #   type: ntrip                               # configure NTRIP client provider (RTK Rover = TCP Client)
+    #   format: RTCM3
+    #   ip_address: '66.219.246.93'               # NTRIP service address
+    #   ip_port: 7777                             # NTRIP service port
+    #   # these following parameters are only valid for "client" modes
+    #   mount_point: ''                           # NTRIP service mount-point (if any)
+    #   username: ''                              # NTRIP service username (if any)
+    #   password: ''                              # NTRIP service password (if any)
+    #   connection_attempts:
+    #     limit: 1                                # every time we attempt to connect, only try one time
+    #     backoff: 2                              # default back off, ignored because only connecting once
+    #   watchdog:                                 # connectivity watchdog timer - reconnects if no RTK activity
+    #     enable: true
+    #     interval: 1                             # check every 1 second for traffic
+    #     timeout: 5                              # number of seconds of inactivity before attempting to reconnect
 
 #     ntrip_example2:                             # Rename as needed
 #       type: ntrip                               # configure NTRIP client provider (RTK Rover = TCP Client)

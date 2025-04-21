@@ -48,7 +48,8 @@ GPSToVirtSerial::GPSToVirtSerial(std::string port)
     // {
     //     RCLCPP_INFO(this->get_logger(), "Opened /dev/tnt1 successfully");
     // }
-    serial_fd_ = open(port.c_str(), O_WRONLY | O_NONBLOCK);
+    // serial_fd_ = open(port.c_str(), O_WRONLY | O_NONBLOCK);
+    serial_fd_ = open(port.c_str(), O_WRONLY | O_NOCTTY | O_NONBLOCK);
     if (serial_fd_ < 0)
     {
         RCLCPP_ERROR(rclcpp::get_logger("GPSToVirtSerial"), "Failed to open %s: %s", port.c_str(), strerror(errno));
@@ -130,7 +131,7 @@ void GPSToVirtSerial::write_msg_to_nmea_to_serial(const inertial_sense_ros2::msg
 
     // Assemble GPRMC (speed and track = 0.0)
     std::ostringstream gprmc;
-    gprmc << "$GPRMC," << time_str << ",A," << lat_str << "," << ns << ","
+    gprmc << "$GNRMC," << time_str << ",A," << lat_str << "," << ns << ","
             << lon_str << "," << ew << ",0.0,0.0," << date_str << ",,,";
 
     // Compute checksum
@@ -174,8 +175,10 @@ void GPSToVirtSerial::write_msg_to_nmea_to_serial(const inertial_sense_ros2::msg
 
 void GPSToVirtSerial::write_msg_to_nmea_to_serial_GGA_RMC(const inertial_sense_ros2::msg::GPS *msg)
 {
+    // RCLCPP_INFO(rclcpp::get_logger("GPSToVirtSerial"), "Write GGA RMC start...");
+
     int64_t int_sec = msg->header.stamp.sec;
-    int64_t int_nsec = msg->header.stamp.sec;
+    int64_t int_nsec = msg->header.stamp.nanosec;
     double gps_time = int_sec + int_nsec * 1e-9;
 
     std::time_t time_t_gps = static_cast<std::time_t>(int_sec);
@@ -209,17 +212,22 @@ void GPSToVirtSerial::write_msg_to_nmea_to_serial_GGA_RMC(const inertial_sense_r
     char date_str[16];
     std::snprintf(date_str, sizeof(date_str), "%02d%02d%02d", utc_time->tm_mday, utc_time->tm_mon + 1, utc_time->tm_year % 100);
 
+    // Gps status
+    std::string status_gga = (msg->status & eGpsStatus::GPS_STATUS_FLAGS_FIX_OK) ? ",1," : ",0,";
+
+    std::string status_rmc = ((msg->status & eGpsStatus::GPS_STATUS_FIX_MASK) != eGpsStatus::GPS_STATUS_FIX_NONE) ? ",A," : ",V,";
+
     // Assemble GNGGA sentence
     std::ostringstream gngga;
-    gngga << "$GNGGA," << time_str << "," << lat_str << "," << ns << "," << lon_str << "," << ew 
-            << ((msg->status & eGpsStatus::GPS_STATUS_FLAGS_GPS_NMEA_DATA) ? ",1," : ",0,")
-            << std::setw(2) << std::setfill('0') << msg->num_sat << ",," 
-            << std::setprecision(2) << msg->hmsl << ",M,,M,,,";
+    gngga << "$GNGGA," << time_str << "," << lat_str << "," << ns << "," << lon_str << "," << ew << status_gga
+            << std::setw(2) << std::setfill('0') << static_cast<int>(msg->num_sat) 
+            << ",," << std::fixed << std::setprecision(2) << msg->hmsl << ",M,,M,,,";
 
     // Assemble GNRMC sentence
     std::ostringstream gnrmc;
-    gnrmc << "$GNRMC," << time_str << (((msg->status & eGpsStatus::GPS_STATUS_FIX_MASK) != eGpsStatus::GPS_STATUS_FIX_NONE) ? ",A," : ",V,") 
-            << lat_str << "," << ns << "," << lon_str << "," << ew << ",0.0,0.0," << date_str << ",,,";
+    gnrmc << "$GNRMC," << time_str << status_rmc 
+            << lat_str << "," << ns << "," << lon_str << "," << ew 
+            << ",0.0,0.0," << date_str << ",,,";
     
     // Compute checksums
     auto compute_checksum = [](std::ostringstream &nmea_ostr)
@@ -240,6 +248,7 @@ void GPSToVirtSerial::write_msg_to_nmea_to_serial_GGA_RMC(const inertial_sense_r
     if (serial_fd_ >= 0)
     {
         ssize_t result = write(serial_fd_, gngga_str.c_str(), gngga_str.length());
+
         if (result < 0)
         {
             if (errno == EAGAIN)
@@ -253,15 +262,21 @@ void GPSToVirtSerial::write_msg_to_nmea_to_serial_GGA_RMC(const inertial_sense_r
         }
         else 
         {
+            // RCLCPP_INFO(rclcpp::get_logger("GPSToVirtSerial"), "Write of GGA sentence successfull");
             result = write(serial_fd_, gnrmc_str.c_str(), gnrmc_str.length());
-            if (errno == EAGAIN)
+            if (result < 0)
             {
-                RCLCPP_WARN(rclcpp::get_logger("GPSToVirtSerial - RMC"), "Write skipped: no reader connected to /dev/tnt0");
-            }
-            else
-            {
-                RCLCPP_ERROR(rclcpp::get_logger("GPSToVirtSerial - RMC"), "Write error: %s", strerror(errno));
+                if (errno == EAGAIN)
+                {
+                    // RCLCPP_WARN(rclcpp::get_logger("GPSToVirtSerial - RMC"), "Write skipped: no reader connected to /dev/tnt0");
+                }
+                else
+                {
+                    // RCLCPP_ERROR(rclcpp::get_logger("GPSToVirtSerial - RMC"), "Write error: %s", strerror(errno));
+                }
             }
         }
     }
+    // RCLCPP_INFO(rclcpp::get_logger("GPSToVirtSerial"), "Write GGA RMC end.");
+
 }
