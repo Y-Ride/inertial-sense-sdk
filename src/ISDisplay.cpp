@@ -51,7 +51,7 @@ using namespace std;
 
 #define DATASET_VIEW_NUM_ROWS   25
 #define DISPLAY_DELTA_TIME	    0    // show delta time instead of time
-#define SNPRINTF_ID_NAME(id)    SNPRINTF(ptr, ptrEnd - ptr, "(%3d) %s:", id, cISDataMappings::DataName(id))
+#define SNPRINTF_ID_NAME(id)    SNPRINTF(ptr, ptrEnd - ptr, "(%d) %s:", id, cISDataMappings::DataName(id))
 
 static bool s_exitProgram;
 
@@ -243,12 +243,18 @@ string cInertialSenseDisplay::Connected()
 
 	unsigned int timeMs = current_timeMs();
 
-	// cltool runtime
-	double runtime = 0.001 * (timeMs - m_startMs);
+	// cltool elapsed
+	unsigned int elapsedMs = timeMs - m_startMs;
+	unsigned int totalSeconds = elapsedMs / 1000;
+	unsigned int hours = totalSeconds / 3600;
+	unsigned int minutes = (totalSeconds % 3600) / 60;
+	unsigned int seconds = totalSeconds % 60;
 
 	std::ostringstream stream;
 	stream << Header() << "Connected.  ";
-    stream << std::fixed << std::setprecision(1) << runtime << "s";
+	stream << hours << ':'
+		<< std::setw(2) << std::setfill('0') << minutes << ':'
+		<< std::setw(2) << std::setfill('0') << seconds << 's';
 	stream << ", Tx " << (m_comm ? std::to_string(m_comm->txPktCount) : "--");
 	stream << ", Rx " << (m_comm ? std::to_string(m_comm->rxPktCount) : "--");
 	if (m_port)
@@ -745,6 +751,7 @@ string cInertialSenseDisplay::DataToString(const p_data_t* data)
 	case DID_RTOS_INFO:         str = DataToStringRTOS(d.rtosInfo, data->hdr);              break;
 	case DID_SENSORS_ADC:       str = DataToStringSensorsADC(d.sensorsAdc, data->hdr);      break;
 	case DID_WHEEL_ENCODER:     str = DataToStringWheelEncoder(d.wheelEncoder, data->hdr);  break;
+	case DID_GPX_RTOS_INFO:     str = DataToStringGRTOS(d.gRtosInfo, data->hdr);            break;
     case DID_GPX_STATUS:        str = DataToStringGPXStatus(d.gpxStatus, data->hdr);        break;
     case DID_DEBUG_ARRAY:       str = DataToStringDebugArray(d.imxDebugArray, data->hdr);   break;
     case DID_GPX_DEBUG_ARRAY:   str = DataToStringDebugArray(d.gpxDebugArray, data->hdr);   break;
@@ -774,7 +781,7 @@ char* cInertialSenseDisplay::StatusToString(char* ptr, char* ptrEnd, const uint3
 {
 	ptr += SNPRINTF(ptr, ptrEnd - ptr, "\tSTATUS\n");
 	ptr += SNPRINTF(ptr, ptrEnd - ptr, "\t\tSatellite Rx %d     Aiding: Mag %d, GPS (Hdg %d, Pos %d)\n",
-		(hdwStatus & HDW_STATUS_GPS_SATELLITE_RX) != 0,
+		(hdwStatus & HDW_STATUS_GPS_SATELLITE_RX_VALID) != 0,
         (insStatus & INS_STATUS_MAG_AIDING_HEADING) != 0,
         (insStatus & INS_STATUS_GPS_AIDING_HEADING) != 0,
         (insStatus & INS_STATUS_GPS_AIDING_POS) != 0);
@@ -1552,6 +1559,15 @@ string cInertialSenseDisplay::DataToStringSysSensors(const sys_sensors_t& sensor
 }
 
 string cInertialSenseDisplay::DataToStringRTOS(const rtos_info_t& info, const p_data_hdr_t& hdr)
+{
+	cDataCSV csv;
+	string csvString;
+	csv.DataToStringCSV(hdr, (const uint8_t*)&info, csvString);
+	const char* terminator = (m_displayMode != DMODE_SCROLL ? "\n" : "");
+	return string("RTOS: ") + csvString + terminator;
+}
+
+string cInertialSenseDisplay::DataToStringGRTOS(const gpx_rtos_info_t& info, const p_data_hdr_t& hdr)
 {
 	cDataCSV csv;
 	string csvString;
