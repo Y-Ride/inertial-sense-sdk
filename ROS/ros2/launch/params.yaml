@@ -27,12 +27,7 @@
 ########################
 
 ## My Stuff
-# inertial_sense_ros2_node:
-#   ros__parameters:
-#     msg:
-#       imu:
-#         enable: true
-#         period: 3
+enable_imu_debug: false
 ##
 
 topic: "inertialsense"
@@ -75,7 +70,6 @@ ref_lla: [0.0, 0.0, 0.0]
 #   message:
 #     topic: ""
 #     enable: true
-
 ins:
   rotation: [0, 0, 0]                           # Rotation in radians about the X,Y,Z axes from Sensor Frame to Intermediate Output Frame.  Order applied: Z,Y,X.
   offset: [0, 0 ,0]                             # X,Y,Z offset in meters from Intermediate Output Frame to INS Output Frame.
@@ -90,21 +84,21 @@ ins:
     odom_ins_ned:
       topic: "odom_ins_ned"
       enable: true
-#     odom_ins_ecef:
-#       topic: "odom_ins_ecef"
-#       enable: true
-    did_ins1:
-      topic: "ins_eul_uvw_ned"
-      enable: true
-#     did_ins2:
-#       topic: "ins_quat_uvw_lla"
-#       enable: true
-#     did_ins4:
-#       topic: "ins_quat_ve_ecef"
-#       enable: true
-#     inl2_states:
-#       topic: "inl2_states"
-#       enable: true
+    # odom_ins_ecef:
+    #   topic: "odom_ins_ecef"
+    #   enable: true
+    # did_ins1:
+    #   topic: "ins_eul_uvw_ned"
+    #   enable: true
+    # did_ins2:
+    #   topic: "ins_quat_uvw_lla"
+    #   enable: true
+    # did_ins4:
+    #   topic: "ins_quat_ve_ecef"
+    #   enable: true
+    # inl2_states:
+    #   topic: "inl2_states"
+    #   enable: true
 
 sensors:
   messages:  
@@ -120,10 +114,10 @@ sensors:
     #   topic: "pimu"
     #   enable: true
     #   period: 1
-    magnetometer:
-      topic: "mag"
-      enable: true
-      period: 1
+    # magnetometer:
+    #   topic: "mag"
+    #   enable: true
+    #   period: 1
     # barometer:
     #   topic: "baro"
     #   enable: true

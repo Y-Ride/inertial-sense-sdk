@@ -61,11 +61,7 @@
     //    ros::console::notifyLoggerLevelsChanged();
     //}
      load_params(paramNode);
-
-    //  #ifdef SEND_GPS_NMEA_TO_VIRT_SERIAL
-    //     // gps_to_virt_serial = GPSToVirtSerial(static_cast<std::string>(VIRT_SERIAL_PORT)); // e.g., "/dev/tnt1"
-    //     gps_to_virt_serial = GPSToVirtSerial("/dev/tnt1"); // e.g., "/dev/tnt1"
-    //  #endif
+     
  }
  
  void InertialSenseROS::initialize(bool configFlashParameters)
@@ -269,9 +265,13 @@
  
      std::string frame_id = nh_->declare_parameter<std::string>("frame_id", "body");
      ph.nodeParam("frame_id", frame_id_, frame_id);
+
      bool log_enabled = nh_->declare_parameter<bool>("enable_log", false);
      ph.nodeParam("enable_log", log_enabled_, log_enabled);
- 
+
+     bool enable_imu_debug = nh_->declare_parameter<bool>("enable_imu_debug", false);
+     ph.nodeParam("enable_imu_debug", imu_debug_enabled_, enable_imu_debug);
+     
  
      // advanced Parameters
      int io_config_bits = nh_->declare_parameter<int>("io_config", 39624800);
@@ -375,7 +375,7 @@
  
      bool did_ins1_enable = nh_->declare_parameter<bool>("msg/did_ins1/enable", false);
      int did_ins1_period = nh_->declare_parameter<int>("msg/did_ins1/period", 1);
-     ph.msgParams(rs_.did_ins1, "msg/did_ins1/enable", "ins_eul_uvw_ned", false, did_ins1_period, did_ins1_enable);
+     ph.msgParams(rs_.did_ins1, "did_ins1", "ins_eul_uvw_ned", false, did_ins1_period, did_ins1_enable);
  
      bool did_ins2_enable = nh_->declare_parameter<bool>("msg/did_ins2/enable", false);
      int did_ins2_period = nh_->declare_parameter<int>("msg/did_ins2/period", 1);
@@ -1221,7 +1221,7 @@
  
      }
  
-     if (rs_.odom_ins_ned.enabled || rs_.odom_ins_enu.enabled || rs_.odom_ins_ecef.enabled)
+     if (rs_.odom_ins_ned.enabled || rs_.odom_ins_enu.enabled || rs_.odom_ins_ecef.enabled || rs_.imu.enabled)
      {
          // Note: the covariance matrices need to be transformed into required frames of reference before publishing the ROS message!
          ixMatrix3  Rb2e, I;
@@ -1241,6 +1241,31 @@
          Pe[2] = msg->ecef[2];
          ecef2lla(Pe, lla);
          quat_ecef2ned(lla[0], lla[1], qe2n);
+         
+         if (rs_.imu.enabled)
+         {
+             // Orientation NED
+             ixVector4 qn2b;
+             // NED-to-body quaternion
+             mul_Quat_ConjQuat(qn2b, qe2b, qe2n); // qn2b = [w, x, y, z]
+             // Attitude
+             msg_imu.orientation.w = qn2b[0];
+             msg_imu.orientation.x = qn2b[1];
+             msg_imu.orientation.y = qn2b[2];
+             msg_imu.orientation.z = qn2b[3];
+
+             sensor_msgs::msg::Imu tmp_imu;
+             tmp_imu.header.stamp = ros_time_from_week_and_tow(msg->week, msg->timeOfWeek);
+             
+             if (imu_debug_enabled_)
+             {
+                 rclcpp::Logger logger_imu_debug_str = rclcpp::get_logger("IMU orientation test"); \
+                 logger_imu_debug_str.set_level(rclcpp::Logger::Level::Debug);
+                 RCLCPP_DEBUG(logger_imu_debug_str, "ori msg time: %d.%d, imu msg time: %d.%d", tmp_imu.header.stamp.sec, tmp_imu.header.stamp.nanosec,
+                                                                                                msg_imu.header.stamp.sec, msg_imu.header.stamp.nanosec);
+             }
+
+         }
  
          if (rs_.odom_ins_ecef.enabled)
          {
@@ -1296,7 +1321,7 @@
             //     tf::Quaternion q;
             //     tf::quaternionMsgToTF(msg_odom_ecef.pose.pose.orientation, q);
             //     transform_ECEF.setRotation(q);
- //
+ 
             //     br.sendTransform(tf::StampedTransform(transform_ECEF, ros::Time::now(), "ins_ecef", "ins_base_link_ecef"));
             // }
          }
@@ -1383,7 +1408,7 @@
                 //     tf::Quaternion q;
                 //     tf::quaternionMsgToTF(msg_odom_ned.pose.pose.orientation, q);
                 //     transform_NED.setRotation(q);
- //
+ 
                 //     br.sendTransform(tf::StampedTransform(transform_NED, ros::Time::now(), "ins_ned", "ins_base_link_ned"));
                 // }
              }
@@ -1477,7 +1502,7 @@
                 //     tf::Quaternion q;
                 //     tf::quaternionMsgToTF(msg_odom_enu.pose.pose.orientation, q);
                 //     transform_ENU.setRotation(q);
- //
+ 
                 //     br.sendTransform(tf::StampedTransform(transform_ENU, ros::Time::now(), "ins_enu", "ins_base_link_enu"));
                 // }
              }
@@ -1900,6 +1925,12 @@
          rs_.imu.streamingCheck(DID);
          msg_imu.header.stamp = ros_time_from_start_time(msg->time);
          msg_imu.header.frame_id = frame_id_;
+         if (imu_debug_enabled_)
+         {
+             rclcpp::Logger logger_imu_debug_str = rclcpp::get_logger("IMU orientation test"); \
+             logger_imu_debug_str.set_level(rclcpp::Logger::Level::Debug);
+             RCLCPP_DEBUG(logger_imu_debug_str, "imu msg time: %d.%d\n", msg_imu.header.stamp.sec, msg_imu.header.stamp.nanosec);
+         }
          if (msg->dt != 0.0f)
          {
              float div = 1.0f/msg->dt;

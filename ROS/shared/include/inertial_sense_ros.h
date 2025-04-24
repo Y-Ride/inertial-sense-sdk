@@ -507,6 +507,7 @@
      msg::INL2States msg_inl2_states;
      sensor_msgs::msg::Imu msg_imu;
      sensor_msgs::msg::Imu msg_imu_raw;
+     bool imu_debug_enabled_ = false;
      msg::PIMU msg_pimu;
      msg::GPS msg_gps1;
      msg::GPS msg_gps2;
