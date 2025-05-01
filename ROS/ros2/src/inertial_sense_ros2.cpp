@@ -118,7 +118,7 @@
  
          if (configFlashParameters)
          {   // Set IMX flash parameters (flash write) after everything else so processor stall doesn't interfere with communications.
-             // configure_flash_parameters();
+            //  configure_flash_parameters();
          }
      }
  }
@@ -1116,7 +1116,20 @@
  }
  
  void InertialSenseROS::setRefLla(const double refLla[3])
- {
+ {  
+     if (refLla_[0] != 0 || refLla_[1] != 0 || refLla_[2] != 0) // Check to see if refLla was set in parameters
+     {
+        if (refLla_[0] != refLla[0] || refLla_[1] != refLla[1] || refLla_[2] != refLla[2]) // Check to see if refLla in parameters is different from the one on the IMX
+        {
+            RCLCPP_WARN(rclcpp::get_logger("setRefLla"), 
+                "*** Mismatch between refLla in parameter file and refLla on IMX *** \n - In params: %lf, %lf, %lf \n - On IMX:    %lf, %lf, %lf",
+                refLla_[0], refLla_[1], refLla_[2], refLla[0], refLla[1], refLla[2]);
+        }
+        else
+        {
+            RCLCPP_INFO(rclcpp::get_logger("setRefLla"), "refLla in param file and on IMX match");
+        }
+     }
      refLla_[0] = refLla[0];
      refLla_[1] = refLla[1];
      refLla_[2] = refLla[2];
@@ -1124,7 +1137,7 @@
      {
          rclcpp::Logger logger_reffla_set = rclcpp::get_logger("reflla_set");
          logger_reffla_set.set_level(rclcpp::Logger::Level::Debug);
-         RCLCPP_DEBUG(logger_reffla_set,"InertialSenseROS: refLla was set");
+         RCLCPP_DEBUG(logger_reffla_set,"InertialSenseROS: refLla was set to \033[1;32mlat: %lf, lon: %lf, alt: %lf", refLla_[0], refLla_[1], refLla_[2]);
      }
      refLLA_valid = true;
  }
