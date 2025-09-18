@@ -49,7 +49,7 @@ source "/opt/ros/${ROS_DISTRO}/setup.bash"
 
 # Build the ros2 packages
 cd ../.. # Change to the ros2_ws
-colcon build --packages-select InertialSenseSDK inertial_sense_ros2
+colcon build --symlink-install --packages-select InertialSenseSDK inertial_sense_ros2
 
 # Add the source command to .bashrc file if it doen't aleady exist
 # LINE="source $(pwd)/install/setup.bash"
